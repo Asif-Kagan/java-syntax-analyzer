@@ -1,0 +1,204 @@
+asifka
+dor.roter
+
+
+=============================
+=      File description     =
+=============================
+ex6:
+    oop.ex6.main
+        Sjavac - the oop.ex6.main class of the program, execute the rest of the program using Analyzer
+    oop.ex6.analysis
+        scope
+            DoubleDeclarationException - extends VerifierException, throws when two declarations of the same
+            variable occurred.
+            DoubleMethodDeclaration - extends VerifierException, throws when two declarations of the same
+            methods occurred.
+            InvalidMethodException - extends VerifierException, throws when the method is used but never
+                                        declared.
+            InvalidType - extends VerifierException, throws when the type is invalid
+            InvalidVarException - extends VerifierException, throws a couple of errors regards the variable
+            MethodSignature -  a class represents the signature of each and every function
+            MethodTable - this class contains hashmap of the function name and the MethodSignature, contains
+            in addition methods to check if the function is in the hash map, etc..
+            ScopeManager - contains LinkedList of the scopes, and methods to search on the hashmaps within the
+            scopes
+            Symbol - this class represents the variable and its attributes.
+            SymbolTable - the class contains hashmap of the variable name and the Symbol, and method
+            accordingly.
+        ast
+            Analyzer - analyze the expression using ScopeManager and MethodTable.
+            Analyzable - Interface class with one function "analyze".
+            Assignment - implements Statement, Node. This class analyze the assignments operations.
+            Block - implements Node, represents a block {} within the code.
+            BooleanExpression - implements Expression, Node, Analyzable.This class analyze the assignments
+            operations.
+            Constant - implements Expression , This class represents a constant variables.
+            Expression - Interface class, with two functions to get the type, and checks if the var is
+            initialized
+            If - implements Statement, Node. This class analyze the if operations, adding block and checks
+            the boolean expression.
+            Method -implements Node, Analyzable. This class analyze the method declaration operations, adding
+            block etc..
+            MethodCall -implements Node, Expression, Statement. This class analyze the method call operations.
+            Node - Interface class, aims to catch the running time errors by polymorphism on the default
+            methods.
+            ParamDeclarationList - implements Node, Analyzable. This class analyze the param declaration
+            operations.
+            ParamList - implements Node. gets to parameter list of the method.
+            Program - implements Node. has two private fields "statements" and "methods" - both linked list.
+            Return - implements Statement, Node. This class analyze the return operations.
+            Statement - Interface class extends Analyzable.
+            Symbol - implements Expression. with two functions to get the type, and checks if the var is
+            initialized
+            UnsupportedASTOperation -extends VerifierException. throws when unsupported operation occurred.
+            VarDeclaration -implements Statement, Node. This class analyze the variable declaration
+            operations.
+            While - implements Statement, Node. This class analyze the while operations.
+        types
+             InvalidTypeException - extends VerifierException, throws when invalid type occurred.
+             VarTypes - enum class of the variable types, contains an "accept" method that determind if the
+             variable type can by supported by the current type given.
+    oop.ex6.exceptions
+        VerifierException - extends Exception, A parent class, from which many exception classes are
+        inherited from. throws when verifier exception occurred.
+    oop.ex6.lexer
+        line
+            GrammarGroups - grouping together important tokens under groups, or holding more complex regex to
+                            validate for the structure of several tokens
+            InvalidGrammarException - extends VerifierException. throws when grammar exception.
+            Line - this class represents line, after parsing to tokens anf has her own ParseStrategy
+            LineFactory - this class construct a line from an array of tokens
+            LineTypes - Enum class of the line types.
+        token
+            Token - this class represents the Token uses a field of TokenTypes enum
+            TokenTypes - enum class of the token types and regexes allowed for each and every token.
+            TokenFactory - enum class of the token types
+            Utilities - utility function on strings class.
+        InvalidTokenException - extends VerifierException, throws with a message of the invalid token and its
+        line number.
+        OutOfBoundsException - extends VerifierException, throws when the line is not in the correct format.
+        Lexer - this class defining a generator of SJAVA tokens for a given file.
+        LexerEOFException - extends LexerIOException.  an exception thrown when the lexer can't get the
+        next line due to EOF.
+        LexerIOException - extends LexerIOException. an exception thrown when the oop.ex6.lexer throws any
+        IOException
+    oop.ex6.parser
+        AssignmentStrategy - Parsing strategy for variable assignments.
+        BooleanExpressionStrategy - Parsing strategy for a boolean expression
+        ExpressionStrategy - Parsing strategy for an expression
+        IfStrategy - Parsing strategy for an if statement
+        MethodCallStrategy - Parsing strategy for a method call
+        MethodStrategy - Parsing strategy for a method declaration and implementation
+        ParamDeclarationStrategy - Parsing strategy for parameters declarations lists
+        ParamListStrategy - Parsing strategy for parameters lists
+        Parser -a facade & strategy manager (hide implementation and allow easier changes) implementing a
+        facade over oop.ex6.lexer and used by each parsing strategy
+        ParseStrategy - abstract class for the strategy's
+        ReturnStrategy - Parsing strategy for a return statement
+        SubRoutineStrategy - Parsing strategy for a sub-routine implementation
+        VarDecStrategy - Parsing strategy for a variable declaration
+        WhileStrategy - Parsing strategy for a while statement.
+
+
+
+
+=============================
+=          Design           =
+=============================
+We broke up the task to several independent submodules, such that each could be reused, tested and modified
+separately, and therefore providing the benefits of improved understandability, continuity, and protection of
+the package private modifier for encapsulation.
+
+main package - has only one class - so it will be convenient for the user to run the program, that calls the
+    Analyzer and the other class.
+
+exceptions mechanism - we used a two super-class exception: VerifierException ,VerifierIOException.
+    where all the other exceptions classes inherits from, therefore allowing us to catch a general type of
+    exception, or any specific type of exception.
+    in addition, using exceptions allowed up to throw them anywhere in the code, and handle them just once, in
+    the main runner of the program, therefore any execution which finishes successfully is valid.
+
+lexer package - using the Factory design pattern in both TokenFactory and LineFactory, the package sole
+    purpose is to provide a lexical context and basic classification to each token and line,
+    but as it does so, it also provides each line with the appropriate strategy for parsing.
+
+parser package - in this package we used Strategy design pattern in order to maintain the
+    possibility to change the behavior of the class at run time.
+    we created objects which represent various strategies and a context object whose behavior
+    varies as per its strategy object, furthermore this allowed up to create a closed design,
+    where any additions to the parser could be implemented as a new strategy, without changing the current
+    file. also we used the Singleton design pattern so we could have one object of a particular class of the
+    strategies, and still allow us to implement an interface.
+
+analysis package - the analysis consists of a few sub-modules, the AST sub-module contains the different code
+    components representation, and using composition each component can use the analyzer facade to analyze
+    itself, therefore keeping the design extremely general, and following the open-closed principle
+    we design this package and its sub-classes in a polymorphism, inheritance and interfaces drive design
+    pattern which allows each code component in the AST to preform code reuse, and through polymorphism
+    achieve a fluid flow of the program without any specific list of cases or ifs.
+    The units are not dependent on each other. also the Analyzer class is a Facade class, which means that the
+    class hides all the implementation behind the scenes, and presents only a few individual functions with
+    short implementation for the convenience of the user.
+
+
+=============================
+=  Implementation details   =
+=============================
+Errors Handling (6.2) -
+We created a package oop.ex6.exceptions and in almost every package we created an exception class.
+In addition we added to every exception thrown an informative message, determine from where and from what
+reason the exception had thrown including the line number where the error occurred.
+The reason why we did that was for user comfortability and comprehension' and also for debugging9in that way
+we could easily understand where we need to look for the problem.
+by using oop.ex6.exceptions, instead of using boolean methods. we got some advantages:
+code is more readable, less complicated methods, and could handle all the oop.ex6.exceptions in one place.
+
+
+Regex Implementation (6.3) -
+We decided to use the regex mechanism in extensive number of times, including represents them in an Enum
+classes for more readability and convenience, as well as sticking with the one-choice concept.
+Furthermore, we made sure to optimize and benchmark the regexes, in order to make sure this very core of our
+program is as efficient and quick as possible.
+in this exercise we used multiply regex. Here a sample of two of them:
+a greedy quantifier:
+COMMENT("^//.*", true),
+we used greedy quantifier in order to catch the whole line as fast as possible, because we are not interested
+in this types of lines, and we could easily skip them (and this is way we inserted "true" within the enum).
+CONSTANT_STRING("\\\".*?\\\""),
+we used a non-greedy quantifier in order to catch only the string in a group without any \" characters in
+between the opening and closing \" because we want only this specific string(in case of multiply one after
+the other string constants).
+
+In addition we used autoCloseable to close the file and parser in an safe way, in case any error was thrown.
+
+Through the use of just a few enums, and inheritance we managed to avoid all exhaustive switch-cases and
+replace those with a dynamic, "automatic" decision making as part of the program's flow, and while sticking
+with the one-choice principle.
+finally, we used regex to implement a minimal templating engine for GrammarTypes and LineTypes to improve the
+readability, and therefore the ease of use and editing those enums.
+
+
+===========================
+=============================
+=    Answers to questions   =
+=============================
+Section 6.2
+q - How would you modify your code to add new types of variables (e.g., float)?
+a - in order to add this new type we would have to add a new TokenType regex that catch the float keyword
+and constant, and specify in the VarTypes enum the other types float can accept.
+once all that data is added to the respective enums, there's no need to change anything else
+
+
+q -  How would you modify your code to add new different methods’ types (i.e int foo())?
+a - Each function has a return type field already set, as of now, due to the grammar limit, only void
+functions are accepted as valid and only empty returns are valid, therefore, once we remove these limitations
+in the LineTypes enum grammar field, the validation would be preformed with any valid type.
+beside that, an update to the return parser strategy and return analysis strategy would be necessary in order
+to save, and check the return value.
+
+q - How would you modify your code to add Classes?
+a - In order to add this new behavior we would need to add a tokens for the new keywords and symbols used in
+the context of classes ("class", "."), and add a GrammarGroups to support "class.method" as a single method
+call. then, we would need to add an appropriate parsing strategy, AST object to represent class, and it's
+analyzer.
